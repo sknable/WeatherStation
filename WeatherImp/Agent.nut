@@ -269,9 +269,9 @@ device.on("postToInternet", function(dataString) {
     a <- mysplit(dataString,',');
 
 
-    if(a[0] != "$" || a[16] != "#")
+    if(a[0] != "$" || a[18] != "#")
     {
-        server.log(format("Error: incorrect frame received (%s, %s)", a[0], a[16]));
+        server.log(format("Error: incorrect frame received (%s, %s)", a[0], a[18]));
         return(0);
     }
     
@@ -293,7 +293,9 @@ device.on("postToInternet", function(dataString) {
     local pressure = a[13].tofloat();
     local batt_lvl = a[14];
     local light_lvl = a[15];
-    //a[16] is #
+    local low_glitch = a[16];
+    local high_glitch = a[17];
+    //a[18] is #
     
     //Correct for the actual orientation of the weather station
     //For my station the north indicator is pointing due west
