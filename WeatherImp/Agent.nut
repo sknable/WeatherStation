@@ -422,6 +422,8 @@ device.on("postToInternet", function(dataString) {
     bigString += "&" + dewptf;
     bigString += "&" + batt_lvl;
     bigString += "&" + light_lvl;
+	bigString += "&" + low_glitch;
+    bigString += "&" + high_glitch;
     
     //Push to SparkFun
     local request = http.get(bigString);
