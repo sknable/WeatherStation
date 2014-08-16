@@ -109,6 +109,13 @@ float light_lvl = 0.72;
 volatile unsigned long raintime, rainlast, raininterval, rain;
 volatile boolean rainlastLOW;
 
+volatile boolean lastGlitch = false;
+volatile unsigned long highGlitch[10];
+volatile unsigned long lowGlitch[10];
+
+volatile int countLow = 0;
+volatile int countHigh = 0;
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 
@@ -120,13 +127,26 @@ void rainIRQ()
 {
   raintime = millis(); // grab current time
   raininterval = raintime - rainlast; // calculate interval between this and last event
-
-  if (raininterval > 3500 && digitalRead(RAIN) == LOW) // ignore switch-bounce glitches less than 10mS after initial edge
+  
+  if(digitalRead(RAIN) == LOW)
+  {
+    lastGlitch = true;
+    lowGlitch[countLow] = raininterval;
+    countLow ++;
+  }
+  else
+  {
+    lastGlitch = true;
+    lowGlitch[countHigh] = raininterval;
+    countHigh++;
+  }
+  
+  if (raininterval > 3000 && digitalRead(RAIN) == LOW) // ignore switch-bounce glitches less than 10mS after initial edge
   {
     rainlast = raintime; // set up for next event
     rainlastLOW = true;
   }
-  else if(digitalRead(RAIN) == HIGH && raininterval > 10 && raininterval < 100 && rainlastLOW)
+  else if(digitalRead(RAIN) == HIGH && raininterval > 10 && raininterval < 300 && rainlastLOW)
   {
     dailyrainin += 0.011; //Each dump is 0.011" of water
     rainHour[minutes] += 0.011; //Increase this minute's amount of rain
@@ -514,40 +534,68 @@ int get_wind_direction()
 //Reports the weather string to the Imp
 void reportWeather()
 {
-  calcWeather(); //Go calc all the various sensors
+	calcWeather(); //Go calc all the various sensors
 
-  Serial.print("$,winddir=");
-  Serial.print(winddir);
-  Serial.print(",windspeedmph=");
-  Serial.print(windspeedmph, 1);
-  Serial.print(",windgustmph=");
-  Serial.print(windgustmph, 1);
-  Serial.print(",windgustdir=");
-  Serial.print(windgustdir);
-  Serial.print(",windspdmph_avg2m=");
-  Serial.print(windspdmph_avg2m, 1);
-  Serial.print(",winddir_avg2m=");
-  Serial.print(winddir_avg2m);
-  Serial.print(",windgustmph_10m=");
-  Serial.print(windgustmph_10m, 1);
-  Serial.print(",windgustdir_10m=");
-  Serial.print(windgustdir_10m);
-  Serial.print(",humidity=");
-  Serial.print(humidity, 1);
-  Serial.print(",tempf=");
-  Serial.print(tempf, 1);
-  Serial.print(",rainin=");
-  Serial.print(rainin, 2);
-  Serial.print(",dailyrainin=");
-  Serial.print(dailyrainin, 2);
-  Serial.print(","); //Don't print pressure= because the agent will be doing calcs on the number
-  Serial.print(pressure, 2);
-  Serial.print(",batt_lvl=");
-  Serial.print(batt_lvl, 2);
-  Serial.print(",light_lvl=");
-  Serial.print(light_lvl, 2);
-  Serial.print(",");
-  Serial.println("#,");
+	Serial.print("$,winddir=");
+	Serial.print(winddir);
+	Serial.print(",windspeedmph=");
+	Serial.print(windspeedmph, 1);
+	Serial.print(",windgustmph=");
+	Serial.print(windgustmph, 1);
+	Serial.print(",windgustdir=");
+	Serial.print(windgustdir);
+	Serial.print(",windspdmph_avg2m=");
+	Serial.print(windspdmph_avg2m, 1);
+	Serial.print(",winddir_avg2m=");
+	Serial.print(winddir_avg2m);
+	Serial.print(",windgustmph_10m=");
+	Serial.print(windgustmph_10m, 1);
+	Serial.print(",windgustdir_10m=");
+	Serial.print(windgustdir_10m);
+	Serial.print(",humidity=");
+	Serial.print(humidity, 1);
+	Serial.print(",tempf=");
+	Serial.print(tempf, 1);
+	Serial.print(",rainin=");
+	Serial.print(rainin, 2);
+	Serial.print(",dailyrainin=");
+	Serial.print(dailyrainin, 2);
+	Serial.print(","); //Don't print pressure= because the agent will be doing calcs on the number
+	Serial.print(pressure, 2);
+	Serial.print(",batt_lvl=");
+	Serial.print(batt_lvl, 2);
+	Serial.print(",light_lvl=");
+	Serial.print(light_lvl, 2);
+  
+	if(lastGlitch)
+	{
+
+	  Serial.print(",low_glitch=");
+	  for(int i =0; i < countLow; i++)
+	  {
+		Serial.print(lowGlitch[i]);
+		Serial.print("-");
+				lowGlitch[i] = -1;
+	  }
+	  
+	  Serial.print(",high_glitch=");
+	  for(int i =0; i < countHigh; i++)
+	  {
+		Serial.print(highGlitch[i]);
+		Serial.print("-");
+				highGlitch[i] = -1;
+	  }
+
+
+	  lastGlitch = false;
+	}
+	else
+	{
+		Serial.print(",low_glitch=none");
+		Serial.print(",high_glitch=none");
+	}
+  
+	Serial.println(",#,");
 }
 
 
