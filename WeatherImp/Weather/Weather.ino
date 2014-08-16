@@ -126,7 +126,7 @@ void rainIRQ()
     rainlast = raintime; // set up for next event
     rainlastLOW = true;
   }
-  else if(raininterval > 10 && digitalRead(RAIN) == HIGH && rainlastLOW)
+  else if(digitalRead(RAIN) == HIGH && raininterval > 10 && raininterval < 100 && rainlastLOW)
   {
     dailyrainin += 0.011; //Each dump is 0.011" of water
     rainHour[minutes] += 0.011; //Increase this minute's amount of rain
