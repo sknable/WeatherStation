@@ -487,13 +487,20 @@ function checkMidnight(ignore) {
         if(midnightReset == false)
         {
             server.log("Sending midnight reset");
+            local strSparkFun = "http://data.sparkfun.com/input/" + sparkfun_publicKey  + "/clear?";
+            local privateKey = "private_key=" + sparkfun_privateKey;
+            local request = http.get(strSparkFun + privateKey);
+            local response = request.sendsync();
+            server.log("SparkFun Clear response = " + response.body);
+
             midnightReset = true; //We should only reset once
-            device.send("sendMidnightReset", 1);
+            device.send("checkMidnight", 1);
+
         }
     }
     else {
         midnightReset = false; //Reset our state
-    }
+   }
 }
     
 //Recording to a google doc is a bit tricky. Many people have found ways of posting
