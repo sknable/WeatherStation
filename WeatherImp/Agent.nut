@@ -20,6 +20,8 @@ local STATION_PW = ""; //Note that you must only use alphanumerics in your passw
 local sparkfun_publicKey = "";
 local sparkfun_privateKey = "";
 
+local sparkfun_publicKey2 = "";
+local sparkfun_privateKey2 = "";
 
 local LOCAL_ALTITUDE_METERS = 784; 
 
@@ -263,7 +265,10 @@ device.on("ready", function(ready) {
 // When we hear something from the device, split it apart and post it
 device.on("postToInternet", function(dataString) {
     
-    //server.log("Incoming: " + dataString);
+    server.log("Incoming: " + dataString);
+    
+    //Check to see if we need to send a midnight reset
+    checkMidnight(1);
     
     //Break the incoming string into pieces by comma
     a <- mysplit(dataString,',');
@@ -366,15 +371,17 @@ device.on("postToInternet", function(dataString) {
     bigString += "&" + windgustdir_10m;
     bigString += "&" + humidity;
     bigString += "&" + tempf;
-    bigString += "&rainin=0";
-    bigString += "&dailyrainin=0";
+//    bigString += "&rainin=0";
+  //  bigString += "&dailyrainin=0";
+        bigString += "&" + rainin;
+    bigString += "&" + dailyrainin;
     bigString += "&" + baromin
     bigString += "&" + dewptf;
     //bigString += "&" + weather;
     //bigString += "&" + clouds;
     bigString += "&" + "softwaretype=SparkFunWeatherImp"; //Cause we can
     bigString += "&" + "realtime=1"; //You better believe it!
-    bigString += "&" + "rtfreq=10"; //Set rapid fire freq to once every 10 seconds
+    bigString += "&" + "rtfreq=45"; //Set rapid fire freq to once every 10 seconds
     bigString += "&" + "action=updateraw";
 
 
@@ -422,20 +429,58 @@ device.on("postToInternet", function(dataString) {
     bigString += "&" + dewptf;
     bigString += "&" + batt_lvl;
     bigString += "&" + light_lvl;
-	bigString += "&" + low_glitch;
+    bigString += "&" + low_glitch;
     bigString += "&" + high_glitch;
     
     //Push to SparkFun
     local request = http.get(bigString);
     local response = request.sendsync();
     server.log("SparkFun response = " + response.body);
+    
+    
+    
+    local strSparkFun = "http://data.sparkfun.com/input/" + sparkfun_publicKey2  + "/clear?";
+    local privateKey = "private_key=" + sparkfun_privateKey2;
+    local request = http.get(strSparkFun + privateKey);
+    local response = request.sendsync();
+    server.log("SparkFun2 Clear response = " + response.body);
+    
+        //Now we form the large string to pass to sparkfun
+    local strSparkFun = "http://data.sparkfun.com/input/";
+    local privateKey = "private_key=" + sparkfun_privateKey2;
 
 
-    //Check to see if we need to send a midnight reset
-    checkMidnight(1);
-
+    bigString = strSparkFun;
+    bigString += sparkfun_publicKey2;
+    bigString += "?" + privateKey;
+    bigString += "&" + measurementTime;
+    bigString += "&" + winddir;
+    bigString += "&" + windspeedmph;
+    bigString += "&" + windgustmph;
+    bigString += "&" + windgustdir;
+    bigString += "&" + windspdmph_avg2m;
+    bigString += "&" + winddir_avg2m;
+    bigString += "&" + windgustmph_10m;
+    bigString += "&" + windgustdir_10m;
+    bigString += "&" + humidity;
+    bigString += "&" + tempf;
+    bigString += "&" + rainin;
+    bigString += "&" + dailyrainin;
+    bigString += "&" + baromin;
+    bigString += "&" + dewptf;
+    bigString += "&" + batt_lvl;
+    bigString += "&" + light_lvl;
+    
+    //Push to SparkFun
+    local request = http.get(bigString);
+    local response = request.sendsync();
+    server.log("SparkFun response2 = " + response.body);
+    
+    
 
     server.log("Update complete!");
+    
+
 }); 
 
 

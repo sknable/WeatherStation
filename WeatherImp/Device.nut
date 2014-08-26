@@ -326,6 +326,8 @@ function toggleRxLED()
 }
 
 
+
+
 function checkMidnight(value)
 {
     server.log("Device midnight reset");
@@ -335,7 +337,6 @@ function checkMidnight(value)
 //When the agent detects a midnight cross over, send a reset to arduino
 //This resets the cumulative rain and other daily variables
 agent.on("checkMidnight",checkMidnight);
-
 
 
 // Send a character to the Arduino to gather the latest data
@@ -413,7 +414,7 @@ function checkWeather() {
     agent.send("postToInternet", incomingStream);
     
     //imp.wakeup(10.0, checkWeather);
-	imp.sleep(1);
+    imp.sleep(1);
 }
 
 
@@ -429,9 +430,9 @@ SERIAL.configure(9600, 8, PARITY_NONE, 1, NO_CTSRTS); // 9600 baud worked well, 
 checkWeather();
 
 
-//Power down the imp to low power mode, then wake up after 10 seconds
+//Power down the imp to low power mode, then wake up after 30 seconds
 //Wunderground has a minimum of 2.5 seconds between Rapidfire reports
 imp.onidle(function() {
-  server.log("Nothing to do, going to sleep for 10 seconds");
-  server.sleepfor(9);
+  server.log("Nothing to do, going to sleep for 45 seconds");
+  server.sleepfor(45);
 });
